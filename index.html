@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Task Manager</title>
+    <style>
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
+      th {
+        background-color: #f4f4f4;
+      }
+      .error {
+        color: red;
+      }
+      .success {
+        color: green;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Task Manager</h1>
+
+    <!-- Form Tambah Task -->
+    <form id="taskForm">
+      <input type="text" id="taskName" placeholder="Masukkan Nama Task" required />
+      <button type="submit">Tambah Task</button>
+    </form>
+    <p id="message"></p>
+
+    <!-- Tabel Data Task -->
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nama Task</th>
+          <th>Status</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="taskTable">
+        <!-- Data akan diisi melalui AJAX -->
+      </tbody>
+    </table>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+      $(document).ready(function () {
+        // Load data saat halaman dimuat
+        loadTasks();
+
+        // Tambah Task
+        $("#taskForm").submit(function (e) {
+          e.preventDefault();
+          let taskName = $("#taskName").val();
+
+          $.ajax({
+            url: "create.php",
+            type: "POST",
+            data: { task_name: taskName },
+            success: function (response) {
+              $("#message").text(response).addClass("success");
+              $("#taskName").val("");
+              loadTasks();
+            },
+            error: function () {
+              $("#message").text("Gagal menambahkan task!").addClass("error");
+            },
+          });
+        });
+
+        // Hapus Task
+        $(document).on("click", ".delete-btn", function () {
+          let taskId = $(this).data("id");
+
+          $.ajax({
+            url: "delete.php",
+            type: "POST",
+            data: { id: taskId },
+            success: function (response) {
+              $("#message").text(response).addClass("success");
+              loadTasks();
+            },
+            error: function () {
+              $("#message").text("Gagal menghapus task!").addClass("error");
+            },
+          });
+        });
+
+        // Fungsi untuk load data task
+        function loadTasks() {
+          $.ajax({
+            url: "read.php",
+            type: "GET",
+            success: function (data) {
+              $("#taskTable").html(data);
+            },
+            error: function () {
+              $("#taskTable").html('<tr><td colspan="4">Gagal memuat data!</td></tr>');
+            },
+          });
+        }
+      });
+    </script>
+  </body>
+</html>
